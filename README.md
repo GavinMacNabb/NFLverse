@@ -1,50 +1,41 @@
-# football_db
+# NFLverse
 
-Data analytics platform for football sports data in the United States, focused on the NFL and college football (CFB).
+NFLverse is the home for our NFL and college football data work.
 
-## Overview
+## What This Repo Is For
 
-This repository is intended to become the central workspace for collecting, validating, transforming, and analyzing football data. The project will support repeatable data workflows, exploratory analysis, and downstream products built on trusted NFL and CFB datasets.
-
-## Initial Goals
-
-- Build a clean, versioned data foundation for NFL and CFB analytics.
-- Standardize schemas, field definitions, and source attribution across datasets.
-- Support reproducible ingestion and transformation pipelines.
-- Enable analysis for team, player, game, season, and historical trend reporting.
-- Keep the project structured so it can grow into dashboards, models, and research workflows.
-
-## Data Domains
+The goal is simple:
 
 - Game schedules and results
-- Teams and conferences
-- Rosters and player metadata
+- Team and conference data
+- Rosters and player info
 - Play-by-play and drive-level data
-- Team and player statistics
+- Team and player stats
 - Rankings, standings, and advanced metrics
-- Historical archives and season summaries
+- Historical data and season summaries
 
-## Principles
+## How We Work
 
-- Accuracy first: every dataset should be traceable to a source.
-- Reproducibility matters: transformations should be deterministic and documented.
-- NFL and CFB are related but distinct products: avoid mixing assumptions across leagues.
-- Documentation is part of the deliverable, not optional project overhead.
+- Keep the data traceable back to a source.
+- Keep workflows repeatable.
+- Treat NFL and CFB as related but separate products.
+- Keep the repo easy to grow.
 
 ## Versioning
 
-Repository versioning rules live in `VERSION.md`, the canonical machine-readable version lives in `VERSION`, and release history lives in `CHANGELOG.md`.
+Version notes live in `CHANGELOG.md`.
 
-The intended workflow is:
+The actual version number lives in `VERSION`.
 
-- add human-readable change notes to `CHANGELOG.md` under `## [Unreleased]`
-- apply a release label to the pull request: `release:major`, `release:minor`, `release:patch`, or `release:none`
-- let GitHub update `VERSION` and `VERSION.md`, cut the release tag, and publish the GitHub release after merge
-- use the manual GitHub Actions dispatch only for bootstrap or exceptional releases
+Normal flow:
 
-## Development Workflow
+- add notes under `## [Unreleased]` in `CHANGELOG.md`
+- add one PR label: `release:major`, `release:minor`, `release:patch`, or `release:none`
+- let GitHub handle the version bump, tag, and release after merge
 
-Formatting is enforced in pull requests.
+## Formatting
+
+Formatting is checked in pull requests.
 
 Use:
 
@@ -52,11 +43,9 @@ Use:
 - `npm run format`
 - `npm run format:check`
 
-The repository currently uses Prettier to format Markdown, YAML, JSON, and shell files.
+## Planned Layout
 
-## Planned Repository Shape
-
-As the codebase grows, it should generally evolve toward a structure similar to:
+As the repo grows, it will probably look something like this:
 
 ```text
 data/
@@ -69,10 +58,6 @@ tests/
 docs/
 ```
 
-## Agent Guidance
-
-Repository-specific agent rules live in `agents.md`.
-
 ## Status
 
-Initial repository scaffold created. Implementation details, tooling, and data pipelines are still to be defined.
+This is still an early scaffold. The structure is in place, but the actual data pipelines and analytics work are still ahead.
