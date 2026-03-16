@@ -1,0 +1,166 @@
+name: auto-version-and-release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: Release bump type for a manual or bootstrap release
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: auto-version-and-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  auto-version-and-release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch tags
+        run: git fetch --force --tags
+
+      - name: Resolve release bump from pull request labels
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MANUAL_BUMP_TYPE: ${{ inputs.bump_type }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "${MANUAL_BUMP_TYPE:-}" && "$MANUAL_BUMP_TYPE" != "none" ]]; then
+            echo "Using manual workflow-dispatch bump type: $MANUAL_BUMP_TYPE"
+            echo "type=$MANUAL_BUMP_TYPE" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          pr_number="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" --jq '.[0].number // empty')"
+
+          if [[ -z "$pr_number" ]]; then
+            echo "No pull request associated with commit $GITHUB_SHA. Skipping automated release."
+            echo "type=none" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          release_labels=()
+          while IFS= read -r label; do
+            if [[ -n "$label" ]]; then
+              release_labels+=("$label")
+            fi
+          done < <(
+            gh pr view "$pr_number" --repo "$GITHUB_REPOSITORY" --json labels --jq '.labels[].name' |
+              grep '^release:' || true
+          )
+
+          if [[ "${#release_labels[@]}" -eq 0 ]]; then
+            echo "No release label found on PR #$pr_number. Skipping automated release."
+            echo "type=none" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${#release_labels[@]}" -ne 1 ]]; then
+            echo "Expected exactly one release label on PR #$pr_number, found: ${release_labels[*]:-<none>}" >&2
+            exit 1
+          fi
+
+          case "${release_labels[0]}" in
+            release:major)
+              echo "type=major" >> "$GITHUB_OUTPUT"
+              ;;
+            release:minor)
+              echo "type=minor" >> "$GITHUB_OUTPUT"
+              ;;
+            release:patch)
+              echo "type=patch" >> "$GITHUB_OUTPUT"
+              ;;
+            release:none)
+              echo "type=none" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unsupported release label: ${release_labels[0]}" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Stop when no release is needed
+        if: steps.bump.outputs.type == 'none'
+        run: echo "No version bump required for this change."
+
+      - name: Read current version
+        if: steps.bump.outputs.type != 'none'
+        id: current
+        run: echo "value=$(bash .github/scripts/read-version.sh)" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate next version
+        if: steps.bump.outputs.type != 'none'
+        id: next
+        env:
+          CURRENT_VERSION: ${{ steps.current.outputs.value }}
+          BUMP_TYPE: ${{ steps.bump.outputs.type }}
+        run: echo "value=$(bash .github/scripts/bump-version.sh "$CURRENT_VERSION" "$BUMP_TYPE")" >> "$GITHUB_OUTPUT"
+
+      - name: Update version files and finalize changelog
+        if: steps.bump.outputs.type != 'none'
+        env:
+          NEXT_VERSION: ${{ steps.next.outputs.value }}
+        run: |
+          bash .github/scripts/update-version-files.sh "$NEXT_VERSION"
+          bash .github/scripts/finalize-changelog.sh "$NEXT_VERSION" "$(date -u +%F)"
+
+      - name: Format updated files
+        if: steps.bump.outputs.type != 'none'
+        run: npm run format
+
+      - name: Commit and push release files
+        if: steps.bump.outputs.type != 'none'
+        env:
+          NEXT_VERSION: ${{ steps.next.outputs.value }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add VERSION VERSION.md CHANGELOG.md package.json
+          git commit -m "chore(release): v$NEXT_VERSION"
+          git push
+
+      - name: Build release notes from CHANGELOG.md
+        if: steps.bump.outputs.type != 'none'
+        env:
+          NEXT_VERSION: ${{ steps.next.outputs.value }}
+        run: bash .github/scripts/extract-release-notes.sh "$NEXT_VERSION" > /tmp/release-notes.md
+
+      - name: Create GitHub release
+        if: steps.bump.outputs.type != 'none'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT_VERSION: ${{ steps.next.outputs.value }}
+        run: |
+          gh release create "v$NEXT_VERSION" \
+            --target "$(git rev-parse HEAD)" \
+            --title "v$NEXT_VERSION" \
+            --notes-file /tmp/release-notes.md

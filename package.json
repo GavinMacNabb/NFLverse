@@ -1,0 +1,15 @@
+{
+  "name": "football_db",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Data analytics platform for NFL and CFB data.",
+  "packageManager": "npm@11.6.2",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.8.1",
+    "prettier-plugin-sh": "0.18.0"
+  }
+}
