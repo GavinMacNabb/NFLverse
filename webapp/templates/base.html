@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}NFLverse Tables{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        <div class="sidebar-top">
+          <a class="brand" href="{{ url_for('index') }}">NFLverse Browser</a>
+          <p class="tagline">
+            └─ Read-only operator console for the local NFL warehouse
+          </p>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Primary">
+          <a
+            class="nav-link {% if active_page == 'overview' %}is-active{% endif %}"
+            href="{{ url_for('index') }}"
+          >
+            <span class="nav-label">Overview</span>
+            <span class="nav-meta"
+              >{{ overview_metrics.visible_table_count }} tables</span
+            >
+          </a>
+
+          <section class="nav-section">
+            <a
+              class="nav-link {% if active_page in ('players', 'teams', 'weeks') %}is-active{% endif %}"
+              href="{{ url_for('player_search') }}"
+            >
+              <span class="nav-label">Search Views</span>
+              <span class="nav-meta">3 routes</span>
+            </a>
+            <div class="nav-table-list">
+              <a
+                class="nav-sublink {% if active_page == 'players' %}is-active{% endif %}"
+                href="{{ url_for('player_search') }}"
+              >
+                <span>Players</span>
+              </a>
+              <a
+                class="nav-sublink {% if active_page == 'teams' %}is-active{% endif %}"
+                href="{{ url_for('team_search') }}"
+              >
+                <span>Teams</span>
+              </a>
+              <a
+                class="nav-sublink {% if active_page == 'weeks' %}is-active{% endif %}"
+                href="{{ url_for('week_search') }}"
+              >
+                <span>Weeks</span>
+              </a>
+            </div>
+          </section>
+
+          {% for summary in schema_summaries %}
+          <section class="nav-section">
+            <a
+              class="nav-link nav-link-schema {% if active_schema == summary.schema_name and active_page == 'schema' %}is-active{% endif %}"
+              href="{{ url_for('schema_detail', schema_name=summary.schema_name) }}"
+            >
+              <span class="nav-label">{{ summary.label }}</span>
+              <span class="nav-meta">{{ summary.table_count }}</span>
+            </a>
+            <div class="nav-table-list">
+              {% for table in summary.tables %}
+              <a
+                class="nav-sublink {% if active_schema == table.schema_name and active_table == table.table_name %}is-active{% endif %}"
+                href="{{ url_for('table_detail', schema_name=table.schema_name, table_name=table.table_name) }}"
+              >
+                <span>{{ table.table_name }}</span>
+                {% if table.row_count is not none %}
+                <span class="nav-count"
+                  >{{ "{:,}".format(table.row_count) }}</span
+                >
+                {% elif table.file_count is not none %}
+                <span class="nav-count"
+                  >{{ "{:,}".format(table.file_count) }}</span
+                >
+                {% endif %}
+              </a>
+              {% endfor %}
+            </div>
+          </section>
+          {% endfor %}
+        </nav>
+      </aside>
+
+      <div class="app-main">
+        <header class="app-header">
+          <div>
+            <p class="eyebrow">{% block header_kicker %}DuckDB{% endblock %}</p>
+            <h1 class="page-title">
+              {% block header_title %}NFLverse Tables{% endblock %}
+            </h1>
+            <p class="page-subtitle">
+              {% block header_subtitle %}Read-only operator surface for the
+              local warehouse.{% endblock %}
+            </p>
+          </div>
+          <div class="header-meta">
+            <div class="meta-card">
+              <span class="meta-label">└─ Database</span>
+              <strong>{{ database_path.name }}</strong>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">└─ Schemas</span>
+              <strong>{{ overview_metrics.visible_schema_count }}</strong>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">└─ Tables</span>
+              <strong>{{ overview_metrics.visible_table_count }}</strong>
+            </div>
+          </div>
+        </header>
+
+        <main class="page-body">{% block content %}{% endblock %}</main>
+      </div>
+    </div>
+  </body>
+</html>

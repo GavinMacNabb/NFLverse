@@ -1,0 +1,94 @@
+{% extends "base.html" %} {% block title %}Player Search{% endblock %} {% block
+header_kicker %}Search{% endblock %} {% block header_title %}Player Search{%
+endblock %} {% block header_subtitle %} Search the staged NFL player master by
+name, team code, or GSIS id with paginated results. {% endblock %} {% block
+content %}
+<section class="panel">
+  <div class="panel-header">
+    <h2>Filters</h2>
+    <span class="pill">stage_nfl.players</span>
+  </div>
+  <p class="section-note">
+    └─ Search across display name, short name, full name, GSIS id, and latest
+    team.
+  </p>
+  <form class="toolbar-form" method="get">
+    <div class="control-grid">
+      <div class="field">
+        <label for="q">Player Query</label>
+        <input
+          id="q"
+          name="q"
+          type="search"
+          value="{{ search_query }}"
+          placeholder="Mahomes, 00-0033873, KC"
+        />
+      </div>
+      <div class="field">
+        <label for="limit">Rows Per Page</label>
+        <select id="limit" name="limit">
+          {% for option in [10, 25, 50, 100] %} {% if limit == option %}
+          <option value="{{ option }}" selected>{{ option }}</option>
+          {% else %}
+          <option value="{{ option }}">{{ option }}</option>
+          {% endif %} {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="field-actions">
+      <button class="button" type="submit">Search</button>
+      <a class="button-link" href="{{ url_for('player_search') }}">Reset</a>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Results</h2>
+    <span class="pill">{{ total_count }} matches</span>
+  </div>
+  <p class="section-note">
+    └─ Result window {{ result_start }}-{{ result_end }} of {{ total_count }}.
+  </p>
+  {% if players %}
+  <div class="preview-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>GSIS</th>
+          <th>Pos</th>
+          <th>Team</th>
+          <th>Rookie</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for player in players %}
+        <tr>
+          <td>{{ player.display_name }}</td>
+          <td>{{ player.gsis_id }}</td>
+          <td>{{ player.position }}</td>
+          <td>{{ player.latest_team }}</td>
+          <td>{{ player.rookie_season }}</td>
+          <td>{{ player.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pager pager-panel">
+    {% if has_previous %}
+    <a class="pager-link" href="{{ previous_url }}">Previous</a>
+    {% endif %} {% if has_next %}
+    <a class="pager-link" href="{{ next_url }}">Next</a>
+    {% endif %}
+  </div>
+  {% else %}
+  <p class="empty-state">
+    No players matched the current search. Try a shorter name, a team code, or a
+    GSIS id.
+  </p>
+  {% endif %}
+</section>
+{% endblock %}

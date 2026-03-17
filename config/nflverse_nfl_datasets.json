@@ -1,0 +1,46 @@
+{
+  "players": {
+    "asset_name": "players.parquet",
+    "mode": "single",
+    "release_tag": "players",
+    "table_name": "players"
+  },
+  "schedules": {
+    "asset_name": "games.parquet",
+    "mode": "single",
+    "release_tag": "schedules",
+    "table_name": "schedules"
+  },
+  "teams": {
+    "asset_name": "teams_colors_logos.parquet",
+    "mode": "single",
+    "release_tag": "teams",
+    "table_name": "teams"
+  },
+  "rosters": {
+    "asset_pattern": "roster_{season}.parquet",
+    "first_season": 1920,
+    "mode": "seasonal",
+    "release_tag": "rosters",
+    "table_name": "rosters"
+  },
+  "draft_picks": {
+    "asset_name": "draft_picks.parquet",
+    "mode": "single",
+    "release_tag": "draft_picks",
+    "table_name": "draft_picks"
+  },
+  "combine": {
+    "asset_name": "combine.parquet",
+    "mode": "single",
+    "release_tag": "combine",
+    "table_name": "combine"
+  },
+  "pbp": {
+    "asset_pattern": "play_by_play_{season}.parquet",
+    "first_season": 1999,
+    "mode": "seasonal",
+    "release_tag": "pbp",
+    "table_name": "pbp"
+  }
+}
