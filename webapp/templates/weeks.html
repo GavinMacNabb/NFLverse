@@ -16,40 +16,32 @@ block content %}
       <div class="field">
         <label for="season">Season</label>
         <select id="season" name="season">
-          {% for season in available_seasons %}
-          <option
-            value="{{ season }}"
-            {{ "selected" if selected_season == season else "" }}
-          >
-            {{ season }}
-          </option>
-          {% endfor %}
+          {% for season in available_seasons %} {% if selected_season == season
+          %}
+          <option value="{{ season }}" selected>{{ season }}</option>
+          {% else %}
+          <option value="{{ season }}">{{ season }}</option>
+          {% endif %} {% endfor %}
         </select>
       </div>
       <div class="field">
         <label for="week">Week</label>
         <select id="week" name="week">
-          {% for week in available_weeks %}
-          <option
-            value="{{ week }}"
-            {{ "selected" if selected_week == week else "" }}
-          >
-            Week {{ week }}
-          </option>
-          {% endfor %}
+          {% for week in available_weeks %} {% if selected_week == week %}
+          <option value="{{ week }}" selected>Week {{ week }}</option>
+          {% else %}
+          <option value="{{ week }}">Week {{ week }}</option>
+          {% endif %} {% endfor %}
         </select>
       </div>
       <div class="field">
         <label for="limit">Rows Per Page</label>
         <select id="limit" name="limit">
-          {% for option in [10, 25, 50, 100] %}
-          <option
-            value="{{ option }}"
-            {{ "selected" if limit == option else "" }}
-          >
-            {{ option }}
-          </option>
-          {% endfor %}
+          {% for option in [10, 25, 50, 100] %} {% if limit == option %}
+          <option value="{{ option }}" selected>{{ option }}</option>
+          {% else %}
+          <option value="{{ option }}">{{ option }}</option>
+          {% endif %} {% endfor %}
         </select>
       </div>
     </div>

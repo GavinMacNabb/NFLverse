@@ -16,42 +16,39 @@ block content %}
       <div class="field">
         <label for="season">Season</label>
         <select id="season" name="season">
-          {% for season in available_seasons %}
-          <option
-            value="{{ season }}"
-            {{ "selected" if selected_season == season else "" }}
-          >
-            {{ season }}
-          </option>
-          {% endfor %}
+          {% for season in available_seasons %} {% if selected_season == season
+          %}
+          <option value="{{ season }}" selected>{{ season }}</option>
+          {% else %}
+          <option value="{{ season }}">{{ season }}</option>
+          {% endif %} {% endfor %}
         </select>
       </div>
       <div class="field">
         <label for="team">Team</label>
         <select id="team" name="team">
           <option value="">Select team</option>
-          {% for option in team_options %}
-          <option
-            value="{{ option.team }}"
-            {{ "selected" if selected_team == option.team else "" }}
-          >
+          {% for option in team_options %} {% if selected_team == option.team %}
+          <option value="{{ option.team }}" selected>
             {{ option.team }}{% if option.label and option.label != option.team
             %} - {{ option.label }}{% endif %}
           </option>
-          {% endfor %}
+          {% else %}
+          <option value="{{ option.team }}">
+            {{ option.team }}{% if option.label and option.label != option.team
+            %} - {{ option.label }}{% endif %}
+          </option>
+          {% endif %} {% endfor %}
         </select>
       </div>
       <div class="field">
         <label for="limit">Rows Per Page</label>
         <select id="limit" name="limit">
-          {% for option in [10, 25, 50, 100] %}
-          <option
-            value="{{ option }}"
-            {{ "selected" if limit == option else "" }}
-          >
-            {{ option }}
-          </option>
-          {% endfor %}
+          {% for option in [10, 25, 50, 100] %} {% if limit == option %}
+          <option value="{{ option }}" selected>{{ option }}</option>
+          {% else %}
+          <option value="{{ option }}">{{ option }}</option>
+          {% endif %} {% endfor %}
         </select>
       </div>
     </div>

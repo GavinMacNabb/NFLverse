@@ -27,14 +27,11 @@ content %}
       <div class="field">
         <label for="limit">Rows Per Page</label>
         <select id="limit" name="limit">
-          {% for option in [10, 25, 50, 100] %}
-          <option
-            value="{{ option }}"
-            {{ "selected" if limit == option else "" }}
-          >
-            {{ option }}
-          </option>
-          {% endfor %}
+          {% for option in [10, 25, 50, 100] %} {% if limit == option %}
+          <option value="{{ option }}" selected>{{ option }}</option>
+          {% else %}
+          <option value="{{ option }}">{{ option }}</option>
+          {% endif %} {% endfor %}
         </select>
       </div>
     </div>
