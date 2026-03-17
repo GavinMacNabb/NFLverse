@@ -1,0 +1,86 @@
+{% extends "base.html" %} {% block title %}{{ schema_name }}{% endblock %} {%
+block header_kicker %}Schema{% endblock %} {% block header_title %}{{
+schema_summary.label }}{% endblock %} {% block header_subtitle %}{{
+schema_summary.description }}{% endblock %} {% block content %}
+<section class="stat-grid">
+  <article class="stat-card accent-{{ schema_summary.accent }}">
+    <span class="stat-label">└─ Tables</span>
+    <strong class="stat-value">{{ schema_summary.table_count }}</strong>
+    <p>Visible objects surfaced for {{ schema_name }}.</p>
+  </article>
+  <article class="stat-card accent-stage">
+    <span class="stat-label">└─ Rows</span>
+    <strong class="stat-value"
+      >{{ "{:,}".format(schema_summary.row_count_total) }}</strong
+    >
+    <p>Known row totals where the browser can resolve them.</p>
+  </article>
+  <article class="stat-card accent-raw">
+    <span class="stat-label">└─ Files</span>
+    <strong class="stat-value"
+      >{{ "{:,}".format(schema_summary.file_count_total) }}</strong
+    >
+    <p>Tracked source file counts for raw datasets in this schema.</p>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Page Draft</h2>
+    <a class="text-link" href="{{ url_for('index') }}">Back to overview</a>
+  </div>
+  <p class="section-note">
+    └─ Schema pages summarize scope, inventory, and the tables technicians will
+    inspect first.
+  </p>
+  <div class="draft-grid">
+    <article class="draft-card">
+      <h3>Purpose</h3>
+      <p>{{ schema_summary.description }}</p>
+    </article>
+    <article class="draft-card">
+      <h3>Use This Page For</h3>
+      <p>
+        Schema-level notes, table ownership, and conventions can live here once
+        the browser grows past simple previews.
+      </p>
+    </article>
+    <article class="draft-card">
+      <h3>Tables</h3>
+      <p>
+        {{ schema_summary.table_count }} browsable objects are linked below.
+      </p>
+    </article>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Tables</h2>
+    <span class="pill">{{ schema_tables|length }} items</span>
+  </div>
+  <p class="section-note">
+    └─ Open a table to inspect grain, columns, and a bounded preview window.
+  </p>
+  <div class="table-grid">
+    {% for table in schema_tables %}
+    <a
+      class="table-card"
+      href="{{ url_for('table_detail', schema_name=table.schema_name, table_name=table.table_name) }}"
+    >
+      <div class="table-card-header">
+        <h3>{{ table.table_name }}</h3>
+        <span class="card-type">{{ table.table_type|lower }}</span>
+      </div>
+      {% if table.row_count is not none %}
+      <p class="metric">{{ "{:,}".format(table.row_count) }} rows</p>
+      {% elif table.file_count is not none %}
+      <p class="metric">{{ "{:,}".format(table.file_count) }} files</p>
+      {% else %}
+      <p class="metric">Preview available</p>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

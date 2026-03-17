@@ -1,0 +1,109 @@
+{% extends "base.html" %} {% block title %}Week Search{% endblock %} {% block
+header_kicker %}Search{% endblock %} {% block header_title %}Week Search{%
+endblock %} {% block header_subtitle %} Browse a single week within a season
+using the staged games table and paginated result windows. {% endblock %} {%
+block content %}
+<section class="panel">
+  <div class="panel-header">
+    <h2>Filters</h2>
+    <span class="pill">stage_nfl.games</span>
+  </div>
+  <p class="section-note">
+    └─ Week search shows the game slate exactly once per game.
+  </p>
+  <form class="toolbar-form" method="get">
+    <div class="control-grid">
+      <div class="field">
+        <label for="season">Season</label>
+        <select id="season" name="season">
+          {% for season in available_seasons %}
+          <option
+            value="{{ season }}"
+            {{ "selected" if selected_season == season else "" }}
+          >
+            {{ season }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="week">Week</label>
+        <select id="week" name="week">
+          {% for week in available_weeks %}
+          <option
+            value="{{ week }}"
+            {{ "selected" if selected_week == week else "" }}
+          >
+            Week {{ week }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="limit">Rows Per Page</label>
+        <select id="limit" name="limit">
+          {% for option in [10, 25, 50, 100] %}
+          <option
+            value="{{ option }}"
+            {{ "selected" if limit == option else "" }}
+          >
+            {{ option }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="field-actions">
+      <button class="button" type="submit">Load Week</button>
+      <a class="button-link" href="{{ url_for('week_search') }}">Reset</a>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Results</h2>
+    <span class="pill">{{ total_count }} games</span>
+  </div>
+  <p class="section-note">
+    └─ Result window {{ result_start }}-{{ result_end }} of {{ total_count }}.
+  </p>
+  {% if games %}
+  <div class="preview-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Away</th>
+          <th>Home</th>
+          <th>Score</th>
+          <th>Stadium</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for game in games %}
+        <tr>
+          <td>{{ game.game_date }}</td>
+          <td>{{ game.away_team }}</td>
+          <td>{{ game.home_team }}</td>
+          <td>{{ game.away_score }}-{{ game.home_score }}</td>
+          <td>{{ game.stadium }}</td>
+          <td>{% if game.is_completed %}Final{% else %}Scheduled{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pager pager-panel">
+    {% if has_previous %}
+    <a class="pager-link" href="{{ previous_url }}">Previous</a>
+    {% endif %} {% if has_next %}
+    <a class="pager-link" href="{{ next_url }}">Next</a>
+    {% endif %}
+  </div>
+  {% else %}
+  <p class="empty-state">No games were found for that season and week.</p>
+  {% endif %}
+</section>
+{% endblock %}

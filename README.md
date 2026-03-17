@@ -43,21 +43,85 @@ Use:
 - `npm run format`
 - `npm run format:check`
 
-## Planned Layout
+## NFL Ingestion Pipeline
 
-As the repo grows, it will probably look something like this:
+The first ingestion slice is NFL only.
+
+It pulls verified parquet assets from the official
+[`nflverse-data`](https://github.com/nflverse/nflverse-data) GitHub releases and
+stores them under `data/raw/nfl/`.
+
+Initial datasets:
+
+- `players`
+- `schedules`
+- `teams`
+- `rosters`
+- `draft_picks`
+- `combine`
+- `pbp`
+
+The sync step is conservative on purpose:
+
+- `players` and `schedules` pull one parquet each
+- `rosters` and `pbp` are season-partitioned
+- if you do not pass `--seasons` for a season-partitioned dataset, the pipeline only pulls the latest available season
+
+Setup:
+
+- `make install`
+
+Examples:
+
+- `make sample-ingest`
+- `make sync-stage-slice`
+- `make build-db`
+- `make build-stage`
+- `make validate-stage`
+- `make run-app`
+
+The database step creates a local DuckDB file at `data/staging/nflverse.duckdb`
+and registers raw parquet-backed views in the `raw_nfl` schema.
+
+The first staged layer builds `stage_nfl` tables for the 2021-2025 NFL seasons:
+
+- `stage_nfl.teams`
+- `stage_nfl.players`
+- `stage_nfl.games`
+- `stage_nfl.game_teams`
+- `stage_nfl.roster_snapshots`
+- `stage_nfl.draft_picks`
+- `stage_nfl.combine`
+- `stage_nfl.rookies`
+
+See `docs/nfl-ingestion.md` for details.
+
+## Table Browser
+
+A small Flask app is available for browsing the local DuckDB tables.
+
+- run `make run-app`
+- open `http://127.0.0.1:5000`
+
+See `docs/table-browser.md` for details.
+
+## Layout
+
+Current working layout:
 
 ```text
 data/
   raw/
+    nfl/
   staging/
   curated/
-notebooks/
-src/
+config/
+scripts/
 tests/
 docs/
 ```
 
 ## Status
 
-This is still an early scaffold. The structure is in place, but the actual data pipelines and analytics work are still ahead.
+The repo now has an initial NFL ingestion scaffold and local raw database build
+step. The larger transformation, modeling, and analytics layers are still ahead.

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Frontend Agent"
+  short_description: "Wails React UI design and implementation"
+  default_prompt: "Use $frontend-agent to design or implement a Wails React TypeScript UI with Tailwind CSS v4 and React Aria Components."
+
+policy:
+  allow_implicit_invocation: true

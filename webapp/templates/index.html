@@ -1,0 +1,133 @@
+{% extends "base.html" %} {% block title %}NFLverse Tables{% endblock %} {%
+block header_kicker %}Overview{% endblock %} {% block header_title %}Local NFL
+warehouse control surface.{% endblock %} {% block header_subtitle %} Inspect raw
+ingestion, staged entities, and admin inventory from one read-only shell. {%
+endblock %} {% block content %} {% if database_missing %}
+<section class="panel panel-hero">
+  <h2>Database Missing</h2>
+  <p>
+    The local DuckDB file does not exist yet. Build it with
+    <code>make build-db</code> and <code>make build-stage</code>.
+  </p>
+</section>
+{% else %}
+<section class="stat-grid">
+  <article class="stat-card accent-stage">
+    <span class="stat-label">└─ Stage Rows</span>
+    <strong class="stat-value"
+      >{{ "{:,}".format(overview_metrics.stage_row_count) }}</strong
+    >
+    <p>Materialized rows currently registered in <code>stage_nfl</code>.</p>
+  </article>
+  <article class="stat-card accent-raw">
+    <span class="stat-label">└─ Raw Files</span>
+    <strong class="stat-value"
+      >{{ "{:,}".format(overview_metrics.raw_file_count) }}</strong
+    >
+    <p>
+      Source assets tracked across the visible <code>raw_nfl</code> datasets.
+    </p>
+  </article>
+  <article class="stat-card accent-admin">
+    <span class="stat-label">└─ Visible Tables</span>
+    <strong class="stat-value"
+      >{{ "{:,}".format(overview_metrics.visible_table_count) }}</strong
+    >
+    <p>Total read-only tables and views surfaced in the browser.</p>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Search Views</h2>
+    <span class="pill">Operator routes</span>
+  </div>
+  <p class="section-note">
+    └─ Use targeted pages for player lookup, team schedules, and week-by-week
+    browsing before dropping into raw table previews.
+  </p>
+  <div class="table-grid">
+    <a class="table-card" href="{{ url_for('player_search') }}">
+      <div class="table-card-header">
+        <h3>Player Search</h3>
+        <span class="card-type">stage_nfl.players</span>
+      </div>
+      <p class="metric">Names, ids, teams</p>
+    </a>
+    <a class="table-card" href="{{ url_for('team_search') }}">
+      <div class="table-card-header">
+        <h3>Team Search</h3>
+        <span class="card-type">stage_nfl.game_teams</span>
+      </div>
+      <p class="metric">Season schedules</p>
+    </a>
+    <a class="table-card" href="{{ url_for('week_search') }}">
+      <div class="table-card-header">
+        <h3>Week Search</h3>
+        <span class="card-type">stage_nfl.games</span>
+      </div>
+      <p class="metric">Season week slate</p>
+    </a>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Schema Pages</h2>
+    <span class="pill">{{ schema_summaries|length }} sections</span>
+  </div>
+  <p class="section-note">
+    └─ Each schema page acts as a routing surface for one warehouse layer.
+  </p>
+  <div class="schema-grid">
+    {% for summary in schema_summaries %}
+    <a
+      class="schema-card accent-{{ summary.accent }}"
+      href="{{ url_for('schema_detail', schema_name=summary.schema_name) }}"
+    >
+      <div class="schema-card-top">
+        <p class="schema-name">{{ summary.label }}</p>
+        <span class="pill">{{ summary.table_count }} tables</span>
+      </div>
+      <p class="schema-description">{{ summary.description }}</p>
+      {% if summary.row_count_total %}
+      <p class="schema-metric">
+        {{ "{:,}".format(summary.row_count_total) }} staged rows
+      </p>
+      {% elif summary.file_count_total %}
+      <p class="schema-metric">
+        {{ "{:,}".format(summary.file_count_total) }} tracked files
+      </p>
+      {% else %}
+      <p class="schema-metric">Metadata and previews</p>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Featured Tables</h2>
+    <span class="pill">Quick starts</span>
+  </div>
+  <p class="section-note">
+    └─ Start with staged entities, then step back into raw sources when keys or
+    counts need verification.
+  </p>
+  <div class="table-grid">
+    {% for table in tables_by_schema.get('stage_nfl', [])[:6] %}
+    <a
+      class="table-card"
+      href="{{ url_for('table_detail', schema_name=table.schema_name, table_name=table.table_name) }}"
+    >
+      <div class="table-card-header">
+        <h3>{{ table.table_name }}</h3>
+        <span class="card-type">{{ table.schema_name }}</span>
+      </div>
+      <p class="metric">{{ "{:,}".format(table.row_count or 0) }} rows</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %} {% endblock %}

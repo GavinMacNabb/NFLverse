@@ -1,0 +1,124 @@
+{% extends "base.html" %} {% block title %}{{ schema_name }}.{{ table_name }}{%
+endblock %} {% block header_kicker %}{{ schema_name }}{% endblock %} {% block
+header_title %}{{ table_name }}{% endblock %} {% block header_subtitle %}
+Operator-facing inspection view for
+<code>{{ schema_name }}.{{ table_name }}</code>, including live metadata and a
+bounded preview window. {% endblock %} {% block content %}
+<section class="stat-grid">
+  <article class="stat-card accent-stage">
+    <span class="stat-label">└─ Rows</span>
+    <strong class="stat-value">{{ "{:,}".format(row_count) }}</strong>
+    <p>Total rows in this {{ table_type|lower }}.</p>
+  </article>
+  <article class="stat-card accent-raw">
+    <span class="stat-label">└─ Columns</span>
+    <strong class="stat-value">{{ column_count }}</strong>
+    <p>Documented from a live <code>DESCRIBE</code> against DuckDB.</p>
+  </article>
+  <article class="stat-card accent-admin">
+    <span class="stat-label">└─ Preview Window</span>
+    <strong class="stat-value">{{ preview_start }}-{{ preview_end }}</strong>
+    <p>Current page window at offset {{ offset }} and limit {{ limit }}.</p>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Page Draft</h2>
+    <a
+      class="text-link"
+      href="{{ url_for('schema_detail', schema_name=schema_name) }}"
+      >Open schema page</a
+    >
+  </div>
+  <p class="section-note">
+    └─ This page is structured for grain, key fields, and source inspection
+    before we add filters or exports.
+  </p>
+  <div class="draft-grid">
+    <article class="draft-card">
+      <h3>Metadata</h3>
+      <p>
+        Use this section for grain, join keys, and source notes once we start
+        documenting individual tables.
+      </p>
+    </article>
+    <article class="draft-card">
+      <h3>Featured Columns</h3>
+      <ul class="draft-list">
+        {% for column in featured_columns %}
+        <li>
+          <strong>{{ column.name }}</strong> <span>{{ column.type }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </article>
+    <article class="draft-card">
+      <h3>Actions</h3>
+      <p>
+        Pagination is enabled now. Filters, sorting, and CSV export can slot
+        into this area later without changing the shell.
+      </p>
+    </article>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Columns</h2>
+    <span class="pill">{{ column_count }} fields</span>
+  </div>
+  <p class="section-note">
+    └─ Field types and nullability are pulled directly from the live database.
+  </p>
+  <div class="column-list">
+    {% for column in columns %}
+    <div class="column-card">
+      <strong>{{ column.name }}</strong>
+      <span>{{ column.type }}</span>
+      <span class="nullability">{{ column.null }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <h2>Preview</h2>
+    <div class="pager">
+      {% if has_previous %}
+      <a class="pager-link" href="{{ previous_url }}">Previous</a>
+      {% endif %} {% if has_next %}
+      <a class="pager-link" href="{{ next_url }}">Next</a>
+      {% endif %}
+    </div>
+  </div>
+  <p class="section-note">
+    └─ Preview rows stay bounded so the browser remains fast and readable.
+  </p>
+  {% if rows %}
+  <div class="preview-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          {% for column in columns %}
+          <th>{{ column.name }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          {% for column in columns %}
+          <td>{{ row[column.name] }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty-state">No rows available for this preview window.</p>
+  {% endif %}
+</section>
+{% endblock %}
